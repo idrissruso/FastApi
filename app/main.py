@@ -1,47 +1,50 @@
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Depends
 from pydantic import BaseModel
-from random import randrange
 import psycopg2
-from psycopg2.extras import RealDictCursor 
+from psycopg2.extras import RealDictCursor
+from typing import Optional
+import sys
+sys.path.append('D:\\UI\\Python\\FastApi\\app')
+import models
+from app.database import engine, get_db
+from sqlalchemy.orm import Session,sessionmaker
+
+# db: Session = Depends(get_db)
+
+models.Base.metadata.create_all(bind=engine)
 
 
 class Post_Model(BaseModel):
     name: str
     password: str
-    id: int
+    id: Optional[int] = None
+
 
 while True:
     try:
-        with psycopg2.connect(host = 'localhost', database = 'fastapi', user = 'postgres', password = 'idris2014', cursor_factory= RealDictCursor ) as con:
-            print(con.fileno)
+        with psycopg2.connect(host='localhost', database='fastapi', user='postgres', password='idris2014',
+                              cursor_factory=RealDictCursor) as con:
+            print("Successfully connected to database")
+            cursor = con.cursor()
             break
     except Exception as error:
-        print(error)    
+        print(error)
 
 
-users = [{
-    "name": "Idrissa",
-    "password": "Idrissa@abkar@2014",
-    "id": 274404
-}, {
-    "name": "Nasra",
-    "password": "Nasra@abkar@2014",
-    "id": 845092
-}]
 
 
 def getUserBy_id(id: int):
-    for user in users:
-        if user.get("id") == id:
-            return user
-        else :
-            return None
+    #cursor.execute(""" SELECT * from users where id = (%s)""", (id,))
+    #user = cursor.fetchone()
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    user = session.query(models.Users).filter(models.Users.id == id).first()
+    return user
 
 
 def del_user(id):
-    for user in users:
-        if user.get("id") == id:
-            users.remove(user)
+    cursor.execute(""" DELETE from users where id = %s""", (id,))
+    con.commit()
 
 
 app = FastAPI()
@@ -53,22 +56,27 @@ def home():
 
 
 @app.get("/posts")
-def get_users():
+def get_users(db: Session = Depends(get_db)):
+    #cursor.execute("SELECT * from users")
+    #users = cursor.fetchall()
+    users = db.query(models.Users).all()
     return {"users": users}
 
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
-def post_user(data: Post_Model):
-    data_dict = data.dict()
-    data_dict["id"] = randrange(0, 1000000)
-    users.append(data_dict)
-    return {"message": "New User Added successfylu"}
-
-
+def post_user(data: Post_Model,db: Session = Depends(get_db)):
+    #cursor.execute("""INSERT into users (name,password) VALUES (%s,%s) RETURNING * """, (data.name, data.password))
+    #new_user = cursor.fetchone()
+    #con.commit()
+    new_user = models.Users(**data.dict())
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return {"new_user": new_user}
 
 
 @app.get("/posts/{id}")
-def getUserById(id: int):
+def getUserById(id: int,db: Session = Depends(get_db)):
     user = getUserBy_id(id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
@@ -76,19 +84,22 @@ def getUserById(id: int):
 
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_usre(id: int):
-    if not getUserBy_id(id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    del_user(id)
-
-
-@app.put("/posts/{id}")
-def update_user(id: int, data: Post_Model):
+def delete_usre(id: int, db: Session = Depends(get_db)):
     user = getUserBy_id(id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    for user in users:
-        if 'id' in user and user['id'] == id:
-            index = users.index(user)
-            users[index] = data.dict()
-    return {"message" : "user Successfully Updated!!!"}
+    db.delete(user)
+    db.commit()
+
+
+@app.put("/posts/{id}")
+def update_user(id: int, data: Post_Model,db: Session = Depends(get_db)):
+    user = db.query(models.Users).filter(models.Users.id == id)
+    if not user.first():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    #cursor.execute("""UPDATE users set name = %s, password = %s where id = %s""", (data.name, data.password, id))
+    #con.commit()
+    user.first().name = data.name
+    user.first().password = data.password
+    db.commit()
+    return {"message": "user Successfully Updated!!!"}
