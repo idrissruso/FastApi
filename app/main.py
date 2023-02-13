@@ -1,7 +1,8 @@
-from typing import Union
 from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel
 from random import randrange
+import psycopg2
+from psycopg2.extras import RealDictCursor 
 
 
 class Post_Model(BaseModel):
@@ -9,10 +10,18 @@ class Post_Model(BaseModel):
     password: str
     id: int
 
+while True:
+    try:
+        with psycopg2.connect(host = 'localhost', database = 'fastapi', user = 'postgres', password = 'idris2014', cursor_factory= RealDictCursor ) as con:
+            print(con.fileno)
+            break
+    except Exception as error:
+        print(error)    
+
 
 users = [{
-    "name": "Nasra",
-    "password": "Nasra@abkar@2014",
+    "name": "Idrissa",
+    "password": "Idrissa@abkar@2014",
     "id": 274404
 }, {
     "name": "Nasra",
@@ -23,7 +32,6 @@ users = [{
 
 def getUserBy_id(id: int):
     for user in users:
-        print(type(user))
         if user.get("id") == id:
             return user
         else :
@@ -83,4 +91,4 @@ def update_user(id: int, data: Post_Model):
         if 'id' in user and user['id'] == id:
             index = users.index(user)
             users[index] = data.dict()
-    return {"message" : "user Successfully Updated"}
+    return {"message" : "user Successfully Updated!!!"}
