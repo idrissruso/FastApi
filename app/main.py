@@ -1,24 +1,17 @@
 from fastapi import FastAPI, HTTPException, status, Depends
-from pydantic import BaseModel
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from typing import Optional
+from app.database import engine, get_db
+from sqlalchemy.orm import Session, sessionmaker
 import sys
 sys.path.append('D:\\UI\\Python\\FastApi\\app')
 import models
-from app.database import engine, get_db
-from sqlalchemy.orm import Session,sessionmaker
+import schemas
+
 
 # db: Session = Depends(get_db)
 
 models.Base.metadata.create_all(bind=engine)
-
-
-class Post_Model(BaseModel):
-    name: str
-    password: str
-    id: Optional[int] = None
-
 
 while True:
     try:
@@ -31,11 +24,9 @@ while True:
         print(error)
 
 
-
-
 def getUserBy_id(id: int):
-    #cursor.execute(""" SELECT * from users where id = (%s)""", (id,))
-    #user = cursor.fetchone()
+    # cursor.execute(""" SELECT * from users where id = (%s)""", (id,))
+    # user = cursor.fetchone()
     Session = sessionmaker(bind=engine)
     session = Session()
     user = session.query(models.Users).filter(models.Users.id == id).first()
@@ -57,17 +48,17 @@ def home():
 
 @app.get("/posts")
 def get_users(db: Session = Depends(get_db)):
-    #cursor.execute("SELECT * from users")
-    #users = cursor.fetchall()
+    # cursor.execute("SELECT * from users")
+    # users = cursor.fetchall()
     users = db.query(models.Users).all()
     return {"users": users}
 
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
-def post_user(data: Post_Model,db: Session = Depends(get_db)):
-    #cursor.execute("""INSERT into users (name,password) VALUES (%s,%s) RETURNING * """, (data.name, data.password))
-    #new_user = cursor.fetchone()
-    #con.commit()
+def post_user(data: schemas.CreateUser, db: Session = Depends(get_db)):
+    # cursor.execute("""INSERT into users (name,password) VALUES (%s,%s) RETURNING * """, (data.name, data.password))
+    # new_user = cursor.fetchone()
+    # con.commit()
     new_user = models.Users(**data.dict())
     db.add(new_user)
     db.commit()
@@ -76,7 +67,7 @@ def post_user(data: Post_Model,db: Session = Depends(get_db)):
 
 
 @app.get("/posts/{id}")
-def getUserById(id: int,db: Session = Depends(get_db)):
+def getUserById(id: int, db: Session = Depends(get_db)):
     user = getUserBy_id(id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
@@ -93,12 +84,12 @@ def delete_usre(id: int, db: Session = Depends(get_db)):
 
 
 @app.put("/posts/{id}")
-def update_user(id: int, data: Post_Model,db: Session = Depends(get_db)):
+def update_user(id: int, data: schemas.CreateUser, db: Session = Depends(get_db)):
     user = db.query(models.Users).filter(models.Users.id == id)
     if not user.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    #cursor.execute("""UPDATE users set name = %s, password = %s where id = %s""", (data.name, data.password, id))
-    #con.commit()
+    # cursor.execute("""UPDATE users set name = %s, password = %s where id = %s""", (data.name, data.password, id))
+    # con.commit()
     user.first().name = data.name
     user.first().password = data.password
     db.commit()
