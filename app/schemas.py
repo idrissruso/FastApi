@@ -10,3 +10,11 @@ class User(BaseModel):
 
 class CreateUser(User):
     pass
+
+
+class ResponseModel(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        orm_mode = True

@@ -4,10 +4,10 @@ from psycopg2.extras import RealDictCursor
 from app.database import engine, get_db
 from sqlalchemy.orm import Session, sessionmaker
 import sys
+
 sys.path.append('D:\\UI\\Python\\FastApi\\app')
 import models
 import schemas
-
 
 # db: Session = Depends(get_db)
 
