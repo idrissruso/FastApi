@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, status, Depends
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from app.database import engine, get_db
+from .database import SessionLocal, engine, get_db
 from sqlalchemy.orm import Session, sessionmaker
 import sys
 
@@ -13,29 +13,30 @@ import schemas
 
 models.Base.metadata.create_all(bind=engine)
 
-while True:
-    try:
-        with psycopg2.connect(host='localhost', database='fastapi', user='postgres', password='idris2014',
-                              cursor_factory=RealDictCursor) as con:
-            print("Successfully connected to database")
-            cursor = con.cursor()
-            break
-    except Exception as error:
-        print(error)
 
+# while True:
+#    try:
+#        with psycopg2.connect(host='localhost', database='fastapi', user='postgres', password='idris2014',
+#                              cursor_factory=RealDictCursor) as con:
+#            print("Successfully connected to database")
+#            cursor = con.cursor()
+#            break
+#    except Exception as error:
+#        print(error)
+#
 
 def getUserBy_id(id: int):
     # cursor.execute(""" SELECT * from users where id = (%s)""", (id,))
     # user = cursor.fetchone()
-    Session = sessionmaker(bind=engine)
-    session = Session()
+    session_ = sessionmaker(bind=engine)
+    session = session_()
     user = session.query(models.Users).filter(models.Users.id == id).first()
     return user
 
 
-def del_user(id):
-    cursor.execute(""" DELETE from users where id = %s""", (id,))
-    con.commit()
+# def del_user(id):
+#    cursor.execute(""" DELETE from users where id = %s""", (id,))
+#    con.commit()
 
 
 app = FastAPI()
@@ -43,18 +44,18 @@ app = FastAPI()
 
 @app.get("/")
 def home():
-    return {"Message": "Hello wordl"}
+    return {"Message": "Hello world"}
 
 
-@app.get("/posts")
+@app.get("/posts", response_model=list[schemas.ResponseModel])
 def get_users(db: Session = Depends(get_db)):
     # cursor.execute("SELECT * from users")
     # users = cursor.fetchall()
     users = db.query(models.Users).all()
-    return {"users": users}
+    return users
 
 
-@app.post("/posts", status_code=status.HTTP_201_CREATED)
+@app.post("/posts", status_code=status.HTTP_201_CREATED, response_model=schemas.ResponseModel)
 def post_user(data: schemas.CreateUser, db: Session = Depends(get_db)):
     # cursor.execute("""INSERT into users (name,password) VALUES (%s,%s) RETURNING * """, (data.name, data.password))
     # new_user = cursor.fetchone()
@@ -63,20 +64,20 @@ def post_user(data: schemas.CreateUser, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    return {"new_user": new_user}
+    return new_user
 
 
-@app.get("/posts/{id}")
-def getUserById(id: int, db: Session = Depends(get_db)):
+@app.get("/posts/{id}", response_model=schemas.ResponseModel)
+def getUserById(id: int):
     user = getUserBy_id(id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    return {"user": user}
+    return user
 
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_usre(id: int, db: Session = Depends(get_db)):
-    user = getUserBy_id(id)
+def delete_user(id: int, db: Session = Depends(get_db)):
+    user = db.query(models.Users).filter(models.Users.id == id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     db.delete(user)
