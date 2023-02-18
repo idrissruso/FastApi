@@ -2,7 +2,7 @@ from pydantic import BaseModel, EmailStr
 
 
 class User(BaseModel):
-    name: str
+    user_name: str
     email: EmailStr
     password: str
 
@@ -12,8 +12,26 @@ class CreateUser(User):
 
 
 class ResponseModel(BaseModel):
-    id: int
-    name: str
+    user_id: int
+    user_name: str
 
     class Config:
         orm_mode = True
+        
+        
+class CreatePost(BaseModel):
+    title : str
+    content : str
+    
+class PostResponseModel(BaseModel):
+    post_id : int
+    title : str
+    content : str
+    
+    
+    class Config():
+        orm_mode = True
+        
+class LoginCridentials(BaseModel):
+    email: EmailStr
+    password: str
