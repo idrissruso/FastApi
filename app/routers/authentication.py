@@ -3,7 +3,7 @@ from app.schemas import LoginCridentials
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.utils import verify
-from app import models
+from app import models,oauth2
 
 router = APIRouter(tags=["Authentication"])
 
@@ -13,4 +13,4 @@ def login(credentials : LoginCridentials,db : Session = Depends(get_db)):
     if not user or verify(c_password=credentials.password,h_password=user.password):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Invalid Cridentials")
     else :
-        return {"message" : "Loged in successfully"}
+        return oauth2.create_jwt({"user_id" : user.user_id,"user_name" : user.user_name})
