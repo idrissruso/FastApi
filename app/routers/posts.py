@@ -39,3 +39,18 @@ def del_post(post_id : int,db : Session = Depends(get_db)):
 def get_posts(db : Session = Depends(get_db)):
     posts = db.query(models.Post).all()
     return posts
+
+
+@router.put("/{post_id}",response_model=schemas.PostResponseModel)
+def update_post(data : schemas.CreatePost,post_id : int,db : Session = Depends(get_db)):
+    post = db.query(models.Post).filter(models.Post.post_id == post_id)
+    if not post:
+        raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED)
+    else : 
+        post.first().title = data.title
+        post.first().content = data.content
+        db.commit()
+        new_post = db.query(models.Post).filter(models.Post.post_id == post_id).first()
+        return new_post
+        
+    
