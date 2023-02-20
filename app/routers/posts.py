@@ -16,9 +16,12 @@ router = APIRouter(prefix="/posts",tags=["Posts"])
 def create_post(post:schemas.CreatePost,db:Session = Depends(get_db),current_user : int = Depends(oauth2.get_current_user)):
     print(current_user)
     new_post = models.Post(**post.dict())
-    db.add(new_post)
-    db.commit()
-    db.refresh(new_post)
+    try:
+        db.add(new_post)
+        db.commit()
+        db.refresh(new_post)
+    except Exception :
+        raise HTTPException(status_code=status.HTTP_226_IM_USED)
     return new_post
 
 
