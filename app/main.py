@@ -2,11 +2,12 @@ from fastapi import FastAPI
 from .database import  engine
 import sys
 sys.path.append('D:\\UI\\Python\\FastApi\\app')
+from . import database,models
 from routers import posts,users,authentication
 
-# db: Session = Depends(get_db)
+#db: Session = Depends(get_db)
 
-#models.Base.metadata.create_all(bind=engine)
+models.Base.metadata.create_all(bind=engine)
 
 
 # while True:

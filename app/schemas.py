@@ -23,6 +23,7 @@ class ResponseModel(BaseModel):
 class CreatePost(BaseModel):
     title : str
     content : str
+    owner_id : int
     
 class PostResponseModel(BaseModel):
     post_id : int
