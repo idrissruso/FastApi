@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from .database import  engine
 import sys
 sys.path.append('D:\\UI\\Python\\FastApi\\app')
-import models
 from routers import posts,users,authentication
 
 # db: Session = Depends(get_db)
