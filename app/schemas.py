@@ -20,19 +20,30 @@ class ResponseModel(BaseModel):
         orm_mode = True
         
         
+class UserResponseModel(BaseModel):
+    user_name: str
+    email: str
+
+    class Config:
+        orm_mode = True
+        
+        
 class CreatePost(BaseModel):
     title : str
     content : str
     owner_id : Optional[int] = None
     
+    class Config:
+        orm_mode = True
+    
+
 class PostResponseModel(BaseModel):
-    post_id : int
     title : str
     content : str
-    owner_id : int
+    owner_id : Optional[int] = None
+    owner: Optional[UserResponseModel] = None
     
-    
-    class Config():
+    class Config:
         orm_mode = True
         
 class LoginCridentials(BaseModel):
