@@ -37,8 +37,10 @@ def del_post(post_id : int,db : Session = Depends(get_db),current_user : int = D
    post = db.query(models.Post).filter(models.Post.post_id == post_id).first()
    if not post :
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-   if current_user != post.owner_id:
+    
+   if int(current_user) != post.owner_id:
        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="NOT AUTHORISED TO PERFORM THE REQUEST ")
+   
    db.delete(post)
    db.commit()
    
@@ -53,8 +55,8 @@ def update_post(data : schemas.CreatePost,post_id : int,db : Session = Depends(g
     post = db.query(models.Post).filter(models.Post.post_id == post_id)
     if not post:
         raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED)
-    
-    if current_user != post.owner_id:
+
+    if int(current_user) != post.first().owner_id:
        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="NOT AUTHORISED TO PERFORM THE REQUEST ")
    
     post.first().title = data.title
