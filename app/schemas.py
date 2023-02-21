@@ -21,13 +21,15 @@ class ResponseModel(BaseModel):
         
         
 class CreatePost(BaseModel):
-    post_id : int
     title : str
     content : str
     owner_id : Optional[int] = None
     
-class PostResponseModel(CreatePost):
-    owner = User
+class PostResponseModel(BaseModel):
+    post_id : int
+    title : str
+    content : str
+    owner_id : int
     
     
     class Config():
