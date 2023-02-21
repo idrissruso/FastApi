@@ -33,10 +33,12 @@ def get_post_by_id(post_id : int,db : Session = Depends(get_db)):
     return post
 
 @router.delete("/{post_id}",status_code=status.HTTP_204_NO_CONTENT)
-def del_post(post_id : int,db : Session = Depends(get_db)):
+def del_post(post_id : int,db : Session = Depends(get_db),current_user : int = Depends(oauth2.get_current_user)):
    post = db.query(models.Post).filter(models.Post.post_id == post_id).first()
    if not post :
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+   if current_user != post.owner_id:
+       raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="NOT AUTHORISED TO PERFORM THE REQUEST ")
    db.delete(post)
    db.commit()
    
@@ -47,15 +49,18 @@ def get_posts(db : Session = Depends(get_db)):
 
 
 @router.put("/{post_id}",response_model=schemas.PostResponseModel)
-def update_post(data : schemas.CreatePost,post_id : int,db : Session = Depends(get_db)):
+def update_post(data : schemas.CreatePost,post_id : int,db : Session = Depends(get_db),current_user : int = Depends(oauth2.get_current_user)):
     post = db.query(models.Post).filter(models.Post.post_id == post_id)
     if not post:
         raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED)
-    else : 
-        post.first().title = data.title
-        post.first().content = data.content
-        db.commit()
-        new_post = db.query(models.Post).filter(models.Post.post_id == post_id).first()
-        return new_post
-        
+    
+    if current_user != post.owner_id:
+       raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="NOT AUTHORISED TO PERFORM THE REQUEST ")
+   
+    post.first().title = data.title
+    post.first().content = data.content
+    db.commit()
+    new_post = db.query(models.Post).filter(models.Post.post_id == post_id).first()
+    return new_post
+    
     
