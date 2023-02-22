@@ -11,10 +11,10 @@ from oauth2 import get_current_user
 
 router = APIRouter(prefix="/likes",tags=["Likes"])
 
-@router.get("")
+@router.post("")
 def like_post(data : schemas.LikeModel,db : Session = Depends(get_db),current_user : int = Depends(get_current_user)):
-    post = db.query(models.Post).filter(models.Post.post_id == data.post_id).first()
-    if post == None :
+    post = db.query(models.Likes).filter(models.Likes.post_id == data.post_id).first()
+    if not post :
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND,detail="No Post with such id that you provided")
     else : 
         #dir == 0 : like
