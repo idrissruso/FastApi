@@ -62,3 +62,7 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     user_id : Optional[str] = None
     user_name : Optional[str] = None
+
+class LikeResponseModel(BaseModel):
+    post_id : int
+    user_id : int

@@ -25,3 +25,9 @@ class Post(Base):
     owner_id = Column(Integer,ForeignKey("user.user_id",ondelete="CASCADE"))
     owner = relationship("app.models.Users")
     __table_args__ = {"extend_existing": True}
+    
+    
+class Likes(Base):
+    __tablename__ = "like"
+    post_id = Column(Integer,ForeignKey("post.post_id",ondelete="CASCADE"),primary_key=True)
+    user_id = Column(Integer,ForeignKey("user.user_id",ondelete="CASCADE"),primary_key=True)
