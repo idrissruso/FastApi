@@ -3,7 +3,7 @@ from .database import  engine
 import sys
 sys.path.append('D:\\UI\\Python\\FastApi\\app')
 from . import models
-from routers import posts,users,authentication
+from routers import posts,users,authentication,likes
 
 #db: Session = Depends(get_db)
 
@@ -39,6 +39,7 @@ app = FastAPI()
 app.include_router(posts.router)
 app.include_router(users.router)
 app.include_router(authentication.router)
+app.include_router(likes.router)
 
 @app.get("/")
 def home():

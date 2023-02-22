@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, conint
 
 
 class User(BaseModel):
@@ -63,6 +63,12 @@ class TokenData(BaseModel):
     user_id : Optional[str] = None
     user_name : Optional[str] = None
 
+class LikeModel(BaseModel):
+    post_id : int
+    diraction : conint(le=1)
+
 class LikeResponseModel(BaseModel):
+    message : str
     post_id : int
     user_id : int
+    
