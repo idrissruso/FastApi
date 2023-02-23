@@ -32,7 +32,7 @@ def post_user(data: schemas.CreateUser, db: Session = Depends(get_db)):
         db.add(new_user)
         db.commit()
     except sqlalchemy.exc.IntegrityError :
-       raise HTTPException(status_code=status.HTTP_226_IM_USED)
+       raise HTTPException(status_code=status.HTTP_226_IM_USED,detail="The user id that you provided doesn't exist")
     db.refresh(new_user)
     return new_user
 
