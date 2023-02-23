@@ -29,7 +29,7 @@ def create_post(post:schemas.CreatePost,db:Session = Depends(get_db),current_use
 def get_post_by_id(post_id : int,db : Session = Depends(get_db)):
     post = db.query(models.Post).filter(models.Post.post_id == post_id).first()
     if not post :
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="The post id that you provided doesn't exist")
     return post
 
 @router.delete("/{post_id}",status_code=status.HTTP_204_NO_CONTENT)
