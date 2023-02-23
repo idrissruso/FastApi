@@ -36,7 +36,7 @@ def get_post_by_id(post_id : int,db : Session = Depends(get_db)):
 def del_post(post_id : int,db : Session = Depends(get_db),current_user : int = Depends(oauth2.get_current_user)):
    post = db.query(models.Post).filter(models.Post.post_id == post_id).first()
    if not post :
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="The post id that you provided doesn't exist")
     
    if int(current_user) != post.owner_id:
        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="NOT AUTHORISED TO PERFORM THE REQUEST ")
@@ -54,7 +54,7 @@ def get_posts(db : Session = Depends(get_db)):
 def update_post(data : schemas.CreatePost,post_id : int,db : Session = Depends(get_db),current_user : int = Depends(oauth2.get_current_user)):
     post = db.query(models.Post).filter(models.Post.post_id == post_id)
     if not post:
-        raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED)
+        raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED,detail="The post id that you provided doesn't exist")
 
     if int(current_user) != post.first().owner_id:
        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="NOT AUTHORISED TO PERFORM THE REQUEST ")
