@@ -41,7 +41,7 @@ def post_user(data: schemas.CreateUser, db: Session = Depends(get_db)):
 def getUserBy_id(user_id: int,db: Session = Depends(get_db)):
     user = db.query(models.Users).filter(models.Users.user_id == user_id).first()
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="The user id that you provided doesn't exist")
     return user
 
 
